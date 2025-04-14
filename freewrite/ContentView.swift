@@ -130,7 +130,7 @@ struct ContentView: View {
 
     @State private var entryToDelete: HumanEntry? = nil
     @State private var showingDeleteConfirmation = false
-    @State private var isDarkMode: Bool = false // Add dark mode state
+    @State private var isDarkMode: Bool = UserDefaults.standard.bool(forKey: "isDarkMode") // Get saved preference
     @State private var isHoveringDarkMode: Bool = false // Add state for dark mode button hover
     @State private var isHoveringWordCount: Bool = false // Add state for word count hover
     @State private var isHoveringClose: Bool = false // Add state for close button hover
@@ -164,6 +164,7 @@ struct ContentView: View {
     // Add file manager and save timer
     private let fileManager = FileManager.default
     private let saveTimer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+    private let userDefaults = UserDefaults.standard // Add UserDefaults for persistent settings
     
     // Add cached documents directory
     private let documentsDirectory: URL = {
@@ -877,6 +878,7 @@ struct ContentView: View {
                             // Add Dark Mode Toggle button
                             Button(action: {
                                 isDarkMode.toggle()
+                                UserDefaults.standard.set(isDarkMode, forKey: "isDarkMode") // Save preference when toggled
                             }) {
                                 Image(systemName: isDarkMode ? "sun.max" : "moon")
                                     .foregroundColor(isHoveringDarkMode ? (isDarkMode ? .white : .black) : .gray)
