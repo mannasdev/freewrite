@@ -219,6 +219,9 @@ struct ContentView: View {
     @State private var isHoveringDarkMode: Bool = false // Add state for dark mode button hover
     @State private var isHoveringWordCount: Bool = false // Add state for word count hover
     @State private var isHoveringClose: Bool = false // Add state for close button hover
+    @State private var appearanceMode: AppearanceMode = .system // Add state for appearance mode
+
+    @Environment(\.colorScheme) private var systemColorScheme // Add system color scheme environment
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let entryHeight: CGFloat = 40
@@ -567,15 +570,30 @@ struct ContentView: View {
         return fontSize / 2 
     }
     
+    // Add helper method for calculating effective dark mode
+    private func isInDarkMode() -> Bool {
+        switch appearanceMode {
+        case .system:
+            return systemColorScheme == .dark
+        case .light:
+            return false
+        case .dark:
+            return true
+        }
+    }
+    
     var body: some View {
         let buttonBackground = Color.white
         let navHeight: CGFloat = 68
+        
+        // Use helper method instead of local computation
+        let effectiveDarkMode = isInDarkMode()
         
         HStack(spacing: 0) {
             // Main content
             ZStack {
                 // Background color based on dark mode
-                (isDarkMode ? Color(red: 0.15, green: 0.15, blue: 0.15) : Color.white)
+                (effectiveDarkMode ? Color(red: 0.15, green: 0.15, blue: 0.15) : Color.white)
                     .ignoresSafeArea()
                 
                 TextEditor(text: Binding(
@@ -594,17 +612,17 @@ struct ContentView: View {
                         }
                     }
                 ))
-                    .background(isDarkMode ? Color(red: 0.15, green: 0.15, blue: 0.15) : Color.white)
+                    .background(effectiveDarkMode ? Color(red: 0.15, green: 0.15, blue: 0.15) : Color.white)
                     .font(.custom(selectedFont, size: fontSize))
-                    .foregroundColor(isDarkMode ? Color(red: 0.9, green: 0.9, blue: 0.9) : Color(red: 0.20, green: 0.20, blue: 0.20))
+                    .foregroundColor(effectiveDarkMode ? Color(red: 0.9, green: 0.9, blue: 0.9) : Color(red: 0.20, green: 0.20, blue: 0.20))
                     .scrollContentBackground(.hidden)
                     .scrollIndicators(.never)
                     .lineSpacing(lineHeight)
                     .frame(maxWidth: 650)
-                    .id("\(selectedFont)-\(fontSize)-\(isDarkMode)")
+                    .id("\(selectedFont)-\(fontSize)-\(effectiveDarkMode)")
                     .padding(.bottom, bottomNavOpacity > 0 ? navHeight : 0)
                     .ignoresSafeArea()
-                    .colorScheme(isDarkMode ? .dark : .light)
+                    .colorScheme(effectiveDarkMode ? .dark : .light)
                     .onAppear {
                         placeholderText = placeholderOptions.randomElement() ?? "\n\nBegin writing"
                         DispatchQueue.main.async {
@@ -621,7 +639,7 @@ struct ContentView: View {
                             if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 Text(placeholderText)
                                     .font(.custom(selectedFont, size: fontSize))
-                                    .foregroundColor(isDarkMode ? .gray.opacity(0.6) : .gray.opacity(0.5))
+                                    .foregroundColor(effectiveDarkMode ? .gray.opacity(0.6) : .gray.opacity(0.5))
                                     .allowsHitTesting(false)
                                     .offset(x: 5, y: placeholderOffset)
                             }
@@ -640,7 +658,7 @@ struct ContentView: View {
                                 }
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(isHoveringSize ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(isHoveringSize ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 isHoveringSize = hovering
                                 isHoveringBottomNav = hovering
@@ -659,7 +677,7 @@ struct ContentView: View {
                                 currentRandomFont = ""
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(hoveredFont == "Lato" ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(hoveredFont == "Lato" ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 hoveredFont = hovering ? "Lato" : nil
                                 isHoveringBottomNav = hovering
@@ -678,7 +696,7 @@ struct ContentView: View {
                                 currentRandomFont = ""
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(hoveredFont == "Arial" ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(hoveredFont == "Arial" ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 hoveredFont = hovering ? "Arial" : nil
                                 isHoveringBottomNav = hovering
@@ -697,7 +715,7 @@ struct ContentView: View {
                                 currentRandomFont = ""
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(hoveredFont == "System" ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(hoveredFont == "System" ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 hoveredFont = hovering ? "System" : nil
                                 isHoveringBottomNav = hovering
@@ -716,7 +734,7 @@ struct ContentView: View {
                                 currentRandomFont = ""
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(hoveredFont == "Serif" ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(hoveredFont == "Serif" ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 hoveredFont = hovering ? "Serif" : nil
                                 isHoveringBottomNav = hovering
@@ -737,7 +755,7 @@ struct ContentView: View {
                                 }
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(hoveredFont == "Random" ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(hoveredFont == "Random" ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 hoveredFont = hovering ? "Random" : nil
                                 isHoveringBottomNav = hovering
@@ -807,7 +825,7 @@ struct ContentView: View {
                                 showingChatMenu = true
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(isHoveringChat ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(isHoveringChat ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 isHoveringChat = hovering
                                 isHoveringBottomNav = hovering
@@ -882,7 +900,7 @@ struct ContentView: View {
                                 }
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(isHoveringFullscreen ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(isHoveringFullscreen ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 isHoveringFullscreen = hovering
                                 isHoveringBottomNav = hovering
@@ -903,7 +921,7 @@ struct ContentView: View {
                                     .font(.system(size: 13))
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(isHoveringNewEntry ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(isHoveringNewEntry ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 isHoveringNewEntry = hovering
                                 isHoveringBottomNav = hovering
@@ -924,7 +942,7 @@ struct ContentView: View {
                                 }
                             }) {
                                 Image(systemName: "clock.arrow.circlepath")
-                                    .foregroundColor(isHoveringClock ? (isDarkMode ? .white : .black) : .gray)
+                                    .foregroundColor(isHoveringClock ? (effectiveDarkMode ? .white : .black) : .gray)
                             }
                             .buttonStyle(.plain)
                             .onHover { hovering in
@@ -950,7 +968,7 @@ struct ContentView: View {
                                 }
                             }) {
                                 Image(systemName: "tag")
-                                    .foregroundColor(isHoveringTagButton ? (isDarkMode ? .white : .black) : .gray)
+                                    .foregroundColor(isHoveringTagButton ? (effectiveDarkMode ? .white : .black) : .gray)
                             }
                             .buttonStyle(.plain)
                             .onHover { hovering in
@@ -966,12 +984,29 @@ struct ContentView: View {
                             Text("•")
                                 .foregroundColor(.gray)
                             
-                            // Add Dark Mode Toggle button
+                            // Replace Dark Mode Toggle button
                             Button(action: {
-                                isDarkMode.toggle()
+                                // Cycle through appearance modes
+                                switch appearanceMode {
+                                case .system:
+                                    appearanceMode = .light
+                                case .light:
+                                    appearanceMode = .dark
+                                case .dark:
+                                    appearanceMode = .system
+                                }
                             }) {
-                                Image(systemName: isDarkMode ? "sun.max" : "moon")
-                                    .foregroundColor(isHoveringDarkMode ? (isDarkMode ? .white : .black) : .gray)
+                                Image(systemName: {
+                                    switch appearanceMode {
+                                    case .system:
+                                        return systemColorScheme == .dark ? "square.2.stack.3d.top.filled" : "square.2.stack.3d"
+                                    case .light:
+                                        return "sun.max"
+                                    case .dark:
+                                        return "moon"
+                                    }
+                                }())
+                                .foregroundColor(isHoveringDarkMode ? (effectiveDarkMode ? .white : .black) : .gray)
                             }
                             .buttonStyle(.plain)
                             .onHover { hovering in
@@ -993,7 +1028,7 @@ struct ContentView: View {
                                 isSoundEnabled.toggle()
                             }) {
                                 Image(systemName: isSoundEnabled ? "speaker.wave.3" : "speaker.slash")
-                                    .foregroundColor(isHoveringSound ? (isDarkMode ? .white : .black) : .gray)
+                                    .foregroundColor(isHoveringSound ? (effectiveDarkMode ? .white : .black) : .gray)
                             }
                             .buttonStyle(.plain)
                             .onHover { hovering in
@@ -1012,7 +1047,7 @@ struct ContentView: View {
                             // Word count
                             Text(wordCount)
                                 .font(.system(size: 13))
-                                .foregroundColor(isHoveringWordCount ? (isDarkMode ? .white : .black) : .gray)
+                                .foregroundColor(isHoveringWordCount ? (effectiveDarkMode ? .white : .black) : .gray)
                                 .onHover { hovering in
                                     isHoveringWordCount = hovering
                                     isHoveringBottomNav = hovering
@@ -1034,7 +1069,7 @@ struct ContentView: View {
                                     .font(.system(size: 13))
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(isHoveringClose ? (isDarkMode ? .white : .black) : .gray)
+                            .foregroundColor(isHoveringClose ? (effectiveDarkMode ? .white : .black) : .gray)
                             .onHover { hovering in
                                 isHoveringClose = hovering
                                 isHoveringBottomNav = hovering
@@ -1052,7 +1087,7 @@ struct ContentView: View {
                         }
                     }
                     .padding()
-                    .background(isDarkMode ? Color(red: 0.18, green: 0.18, blue: 0.18) : Color.white)
+                    .background(effectiveDarkMode ? Color(red: 0.18, green: 0.18, blue: 0.18) : Color.white)
                     .opacity(bottomNavOpacity)
                     .onHover { hovering in
                         isHoveringBottomNav = hovering
@@ -1083,10 +1118,10 @@ struct ContentView: View {
                                 HStack(spacing: 4) {
                                     Text("History")
                                         .font(.system(size: 13))
-                                        .foregroundColor(isHoveringHistory ? (isDarkMode ? .white : .black) : .secondary)
+                                        .foregroundColor(isHoveringHistory ? (effectiveDarkMode ? .white : .black) : .secondary)
                                     Image(systemName: "arrow.up.right")
                                         .font(.system(size: 10))
-                                        .foregroundColor(isHoveringHistory ? (isDarkMode ? .white : .black) : .secondary)
+                                        .foregroundColor(isHoveringHistory ? (effectiveDarkMode ? .white : .black) : .secondary)
                                 }
                                 Text(getDocumentsDirectory().path)
                                     .font(.system(size: 10))
@@ -1145,8 +1180,8 @@ struct ContentView: View {
                                         .background(
                                             RoundedRectangle(cornerRadius: 4)
                                                 .fill(selectedTags.contains(tag) ? 
-                                                    (isDarkMode ? Color.gray.opacity(0.4) : Color.gray.opacity(0.3)) : 
-                                                    (isDarkMode ? Color.gray.opacity(0.2) : Color.gray.opacity(0.1)))
+                                                    (effectiveDarkMode ? Color.gray.opacity(0.4) : Color.gray.opacity(0.3)) : 
+                                                    (effectiveDarkMode ? Color.gray.opacity(0.2) : Color.gray.opacity(0.1)))
                                         )
                                         .foregroundColor(.primary)
                                 }
@@ -1314,12 +1349,12 @@ struct ContentView: View {
                     .scrollIndicators(.never)
                 }
                 .frame(width: 200)
-                .background(isDarkMode ? Color(red: 0.2, green: 0.2, blue: 0.2) : Color(NSColor.controlBackgroundColor))
+                .background(effectiveDarkMode ? Color(red: 0.2, green: 0.2, blue: 0.2) : Color(NSColor.controlBackgroundColor))
             }
         }
         .frame(minWidth: 1100, minHeight: 600)
         .animation(.easeInOut(duration: 0.2), value: showingSidebar)
-        .preferredColorScheme(isDarkMode ? .dark : .light)
+        .preferredColorScheme(effectiveDarkMode ? .dark : .light)
         .confirmationDialog(
             "Are you sure you want to delete this entry?",
             isPresented: $showingDeleteConfirmation,
@@ -1369,10 +1404,11 @@ struct ContentView: View {
     }
     
     private func backgroundColor(for entry: HumanEntry) -> Color {
+        let effectiveDarkMode = isInDarkMode()
         if entry.id == selectedEntryId {
-            return isDarkMode ? Color.gray.opacity(0.2) : Color.gray.opacity(0.1)  // Adjust for dark mode
+            return effectiveDarkMode ? Color.gray.opacity(0.2) : Color.gray.opacity(0.1)  // Adjust for dark mode
         } else if entry.id == hoveredEntryId {
-            return isDarkMode ? Color.gray.opacity(0.1) : Color.gray.opacity(0.05)  // Adjust for dark mode
+            return effectiveDarkMode ? Color.gray.opacity(0.1) : Color.gray.opacity(0.05)  // Adjust for dark mode
         } else {
             return Color.clear
         }
@@ -1687,6 +1723,13 @@ struct FlowLayout: Layout {
             rowHeight = max(rowHeight, size.height)
         }
     }
+}
+
+// Add appearance mode enum
+enum AppearanceMode: Int {
+    case system = 0
+    case light = 1
+    case dark = 2
 }
 
 #Preview {
